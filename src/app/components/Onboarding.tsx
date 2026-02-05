@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Eye, Lock, UserCheck, ArrowRight, Check, Database, Share2, Bell, MapPin } from 'lucide-react';
+import { Shield, Eye, Lock, UserCheck, ArrowRight, Check, Database, Share2 } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Switch } from '@/app/components/ui/switch';
@@ -8,7 +8,12 @@ import { Progress } from '@/app/components/ui/progress';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface OnboardingProps {
-  onComplete: () => void;
+  onComplete: (userData: {
+    userName: string;
+    email: string;
+    password: string;
+    privacySettings: any;
+  }) => void;
 }
 
 export function Onboarding({ onComplete }: OnboardingProps) {
@@ -31,7 +36,12 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      onComplete();
+      onComplete({
+        userName,
+        email,
+        password,
+        privacySettings
+      });
     }
   };
 

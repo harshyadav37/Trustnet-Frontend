@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { LandingPage } from "@/app/components/LandingPage";
 import { Login } from "@/app/components/Login";
@@ -17,24 +17,77 @@ import { Search } from "@/app/components/Search";
 import { Trending } from "@/app/components/Trending";
 
 export default function App() {
-  const [hasStarted, setHasStarted] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(false);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-    useState(false);
-  const [activeView, setActiveView] = useState("feed");
+  // Load initial state from localStorage
+  const [hasStarted, setHasStarted] = useState(() => {
+    const saved = localStorage.getItem('trustnet_hasStarted');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [isLoginMode, setIsLoginMode] = useState(() => {
+    const saved = localStorage.getItem('trustnet_isLoginMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+    const saved = localStorage.getItem('trustnet_hasCompletedOnboarding');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [activeView, setActiveView] = useState(() => {
+    const saved = localStorage.getItem('trustnet_activeView');
+    return saved || "feed";
+  });
+  const [userData, setUserData] = useState(() => {
+    const saved = localStorage.getItem('trustnet_userData');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [unreadMessages] = useState(3);
   const [unreadNotifications] = useState(7);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('trustnet_hasStarted', JSON.stringify(hasStarted));
+  }, [hasStarted]);
+
+  useEffect(() => {
+    localStorage.setItem('trustnet_isLoginMode', JSON.stringify(isLoginMode));
+  }, [isLoginMode]);
+
+  useEffect(() => {
+    localStorage.setItem('trustnet_hasCompletedOnboarding', JSON.stringify(hasCompletedOnboarding));
+  }, [hasCompletedOnboarding]);
+
+  useEffect(() => {
+    localStorage.setItem('trustnet_activeView', activeView);
+  }, [activeView]);
+
+  useEffect(() => {
+    if (userData) {
+      localStorage.setItem('trustnet_userData', JSON.stringify(userData));
+    }
+  }, [userData]);
 
   const handleLogout = () => {
     setHasStarted(false);
     setHasCompletedOnboarding(false);
     setIsLoginMode(false);
     setActiveView("feed");
+    setUserData(null);
+    // Clear localStorage on logout
+    localStorage.removeItem('trustnet_hasStarted');
+    localStorage.removeItem('trustnet_isLoginMode');
+    localStorage.removeItem('trustnet_hasCompletedOnboarding');
+    localStorage.removeItem('trustnet_activeView');
+    localStorage.removeItem('trustnet_userData');
   };
 
   const handleLogin = (email: string, password: string) => {
     // Here you would typically validate credentials
     console.log('Login attempt:', { email, password });
+    // For demo purposes, we'll assume login is successful
+    // In a real app, you'd validate against a backend
+    setHasCompletedOnboarding(true);
+  };
+
+  const handleOnboardingComplete = (userInfo: any) => {
+    setUserData(userInfo);
     setHasCompletedOnboarding(true);
   };
 
@@ -57,7 +110,7 @@ export default function App() {
   if (!hasCompletedOnboarding) {
     return (
       <Onboarding
-        onComplete={() => setHasCompletedOnboarding(true)}
+        onComplete={handleOnboardingComplete}
       />
     );
   }
@@ -101,6 +154,7 @@ export default function App() {
         unreadMessages={unreadMessages}
         unreadNotifications={unreadNotifications}
         onLogout={handleLogout}
+        userData={userData}
       />
 
       {/* Main Content Area */}

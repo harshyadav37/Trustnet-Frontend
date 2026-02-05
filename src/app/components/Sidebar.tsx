@@ -8,9 +8,13 @@ interface SidebarProps {
   unreadMessages?: number;
   unreadNotifications?: number;
   onLogout?: () => void;
+  userData?: {
+    userName: string;
+    email: string;
+  } | null;
 }
 
-export function Sidebar({ activeView, onViewChange, unreadMessages = 0, unreadNotifications = 0, onLogout }: SidebarProps) {
+export function Sidebar({ activeView, onViewChange, unreadMessages = 0, unreadNotifications = 0, onLogout, userData }: SidebarProps) {
   const menuItems = [
     { id: 'feed', icon: Home, label: 'Home Feed', badge: null },
     { id: 'communities', icon: Users, label: 'Communities', badge: null },
@@ -129,21 +133,21 @@ export function Sidebar({ activeView, onViewChange, unreadMessages = 0, unreadNo
           >
             <Avatar className="w-10 h-10">
               <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="User" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium text-slate-900">Jane Doe</p>
-              <p className="text-xs text-slate-500">@janedoe</p>
-            </div>
-          </button>
-
-          <button
-            onClick={onLogout}
-            className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-700 hover:bg-red-50 hover:text-red-700 transition-colors"
-            title="Logout"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+                <AvatarFallback>{userData?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium text-slate-900">{userData?.userName || 'User'}</p>
+                <p className="text-xs text-slate-500">@{userData?.userName?.toLowerCase() || 'user'}</p>
+              </div>
+            </button>
+            
+            <button 
+              onClick={onLogout}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
         </div>
       </div>
     </aside>
