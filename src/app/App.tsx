@@ -78,11 +78,9 @@ export default function App() {
     localStorage.removeItem('trustnet_userData');
   };
 
-  const handleLogin = (email: string, password: string) => {
-    // Here you would typically validate credentials
-    console.log('Login attempt:', { email, password });
-    // For demo purposes, we'll assume login is successful
-    // In a real app, you'd validate against a backend
+  const handleLogin = (userData: any) => {
+    // Store user data and complete onboarding
+    setUserData(userData);
     setHasCompletedOnboarding(true);
   };
 
@@ -111,6 +109,7 @@ export default function App() {
     return (
       <Onboarding
         onComplete={handleOnboardingComplete}
+        onNavigateToLogin={() => setIsLoginMode(true)}
       />
     );
   }

@@ -1,12 +1,18 @@
 import { useState } from 'react';
-import { Shield, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Shield, ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { motion } from 'motion/react';
+import { authService } from '@/app/services/authService';
 
 interface LoginProps {
-  onLogin: (email: string, password: string) => void;
+  onLogin: (userData: {
+    id: string;
+    name: string;
+    email: string;
+    token: string;
+  }) => void;
   onSwitchToSignup: () => void;
 }
 
@@ -15,16 +21,38 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
 
-    // Simulate login process
-    setTimeout(() => {
-      onLogin(email, password);
+    try {
+      const response = await authService.login({
+        email: email,
+        password: password,
+      });
+
+      console.log('Login Response:', response);
+      setSuccessMessage('Login successful!');
+
+      // Call onLogin with user data and token
+      onLogin({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        token: response.token,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setError(errorMessage);
+      console.error('Login error:', err);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -51,6 +79,24 @@ export function Login({ onLogin, onSwitchToSignup }: LoginProps) {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8"
         >
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800">Error</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+              <p className="text-sm text-green-800 font-medium">{successMessage}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="email">Email Address</Label>

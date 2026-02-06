@@ -9,9 +9,11 @@ interface SidebarProps {
   unreadNotifications?: number;
   onLogout?: () => void;
   userData?: {
-    userName: string;
+    userName?: string;
+    name?: string;
     email: string;
   } | null;
+
 }
 
 export function Sidebar({ activeView, onViewChange, unreadMessages = 0, unreadNotifications = 0, onLogout, userData }: SidebarProps) {
@@ -133,11 +135,11 @@ export function Sidebar({ activeView, onViewChange, unreadMessages = 0, unreadNo
           >
             <Avatar className="w-10 h-10">
               <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="User" />
-                <AvatarFallback>{userData?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                <AvatarFallback>{(userData?.userName || userData?.name)?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-slate-900">{userData?.userName || 'User'}</p>
-                <p className="text-xs text-slate-500">@{userData?.userName?.toLowerCase() || 'user'}</p>
+                <p className="text-sm font-medium text-slate-900">{userData?.userName || userData?.name || 'User'}</p>
+                <p className="text-xs text-slate-500">@{(userData?.userName || userData?.email)?.toLowerCase() || 'user'}</p>
               </div>
             </button>
             

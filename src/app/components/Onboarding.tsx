@@ -1,26 +1,27 @@
 import { useState } from 'react';
-import { Shield, Eye, Lock, UserCheck, ArrowRight, Check, Database, Share2 } from 'lucide-react';
+import { Shield, Eye, Lock, UserCheck, ArrowRight, Check, Database, Share2, AlertCircle } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Switch } from '@/app/components/ui/switch';
 import { Label } from '@/app/components/ui/label';
 import { Progress } from '@/app/components/ui/progress';
 import { motion, AnimatePresence } from 'motion/react';
+import { authService } from '@/app/services/authService';
 
 interface OnboardingProps {
-  onComplete: (userData: {
-    userName: string;
-    email: string;
-    password: string;
-    privacySettings: any;
-  }) => void;
+  onComplete: (userData: any) => void;
+  onError?: (error: string) => void;
+  onNavigateToLogin?: () => void;
 }
 
-export function Onboarding({ onComplete }: OnboardingProps) {
+export function Onboarding({ onComplete, onError, onNavigateToLogin }: OnboardingProps) {
   const [step, setStep] = useState(0);
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [privacySettings, setPrivacySettings] = useState({
     publicProfile: false,
     personalization: true,
@@ -32,16 +33,46 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const totalSteps = 4;
   const progress = ((step + 1) / totalSteps) * 100;
 
+  const handleSignup = async () => {
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const response = await authService.signup({
+        name: userName,
+        email: email,
+        password: password,
+      });
+
+      console.log('Signup Response:', response);
+      setSuccessMessage('Account created successfully!');
+
+      // Call onComplete with the response data
+      onComplete({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        token: response.token,
+        privacySettings,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Signup failed. Please try again.';
+      setError(errorMessage);
+      console.error('Signup error:', err);
+      if (onError) {
+        onError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const nextStep = () => {
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      onComplete({
-        userName,
-        email,
-        password,
-        privacySettings
-      });
+      handleSignup();
     }
   };
 
@@ -70,6 +101,23 @@ export function Onboarding({ onComplete }: OnboardingProps) {
           transition={{ duration: 0.3 }}
           className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8"
         >
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800">Error</p>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+              <p className="text-sm text-green-800 font-medium">{successMessage}</p>
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div
@@ -309,9 +357,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   <Button onClick={prevStep} variant="outline" className="flex-1">
                     Back
                   </Button>
-                  <Button onClick={nextStep} className="flex-1">
-                    Complete Setup
-                    <Check className="w-4 h-4 ml-2" />
+                  <Button onClick={nextStep} className="flex-1" disabled={isLoading}>
+                    {isLoading ? 'Creating Account...' : 'Complete Setup'}
+                    {!isLoading && <Check className="w-4 h-4 ml-2" />}
                   </Button>
                 </div>
               </motion.div>
@@ -320,12 +368,23 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         </motion.div>
 
         {/* Privacy Note */}
-        <p className="text-center text-sm text-slate-500 mt-6">
-          By continuing, you agree to our{' '}
-          <button className="text-blue-600 hover:underline">Terms of Service</button>
-          {' '}and{' '}
-          <button className="text-blue-600 hover:underline">Privacy Policy</button>
-        </p>
+        <div className="text-center text-sm text-slate-500 mt-6 space-y-3">
+          <p>
+            By continuing, you agree to our{' '}
+            <button className="text-blue-600 hover:underline">Terms of Service</button>
+            {' '}and{' '}
+            <button className="text-blue-600 hover:underline">Privacy Policy</button>
+          </p>
+          <p>
+            Already signed up?{' '}
+            <button 
+              onClick={onNavigateToLogin}
+              className="text-blue-600 hover:underline font-semibold transition-colors"
+            >
+              Login here
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

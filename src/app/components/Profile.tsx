@@ -1,3 +1,4 @@
+'use client';
 import { Camera, MapPin, Link as LinkIcon, Calendar, Award, Shield, TrendingUp, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/app/components/ui/avatar';
 import { Button } from '@/app/components/ui/button';
@@ -5,8 +6,18 @@ import { Card } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { Progress } from '@/app/components/ui/progress';
-
+import { useEffect, useState } from "react";
+import Profileupdate from "@/app/components/Profileupdate";
 export function Profile() {
+   const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
   return (
     <div className="max-w-4xl mx-auto py-6 px-4">
       {/* Profile Header */}
@@ -28,43 +39,45 @@ export function Profile() {
           <div className="flex items-end justify-between -mt-16 mb-4">
             <div className="relative">
               <Avatar className="w-32 h-32 border-4 border-white">
-                <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Jane Doe" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"} alt={user?.name || 'User'} />
+                <AvatarFallback>{(user?.name || user?.userName || 'User').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</AvatarFallback>
               </Avatar>
               <button className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full border-2 border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
                 <Camera className="w-4 h-4 text-slate-600" />
               </button>
             </div>
-            <Button>Edit Profile</Button>
+            <Button onClick={() => setIsOpen(true)}>Edit Profile</Button>
           </div>
 
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-slate-900">Jane Doe</h1>
+              <h1 className="text-2xl font-bold text-slate-900"> {user?.name}</h1>
               <Badge className="bg-emerald-600">
                 <Shield className="w-3 h-3 mr-1" />
                 Verified
               </Badge>
             </div>
-            <p className="text-slate-600 mb-1">@janedoe</p>
+            <p className="text-slate-600 mb-1">{user?.email}</p>
+            {/* ABOUT */}
             <p className="text-slate-700 max-w-2xl">
-              Privacy advocate, tech enthusiast, and community builder. Passionate about creating
-              technology that respects human autonomy and dignity.
+              {user?.about || 'Privacy advocate, tech enthusiast, and community builder. Passionate about creating technology that respects human autonomy and dignity.'}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-4 text-sm text-slate-600 mb-6">
+            {/* LOCATION */}
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
-              <span>San Francisco, CA</span>
+              <span>{user?.location || 'San Francisco, CA'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <LinkIcon className="w-4 h-4" />
               <a href="#" className="text-blue-600 hover:underline">janedoe.com</a>
             </div>
+            {/* DOB  */}
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              <span>Joined January 2026</span>
+              <span>{user?.dob ? new Date(user.dob).toLocaleDateString() : 'Joined January 2026'}</span>
             </div>
           </div>
 
@@ -84,6 +97,22 @@ export function Profile() {
           </div>
         </div>
       </Card>
+        {isOpen && (
+          <Profileupdate
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            user={user}
+            onSave={(updatedUser: any) => {
+              setUser(updatedUser);
+              try {
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+              } catch (e) {
+                console.error('Failed to save user to localStorage', e);
+              }
+              setIsOpen(false);
+            }}
+          />
+        )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
