@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 
-const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
+const EditProfileModal = ({ isOpen, onClose, user, onSave }: { isOpen: boolean; onClose: () => void; user: any; onSave: (data: any) => void }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,17 +27,17 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
   if (!isOpen) return null;
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFormData({ ...formData, avatar: reader.result });
+      setFormData({ ...formData, avatar: reader.result as string });
     };
     reader.readAsDataURL(file);
   };
@@ -70,7 +70,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               </div>
               <div className="flex flex-col gap-2">
                 <input
-                  ref={(el) => (fileInputRef.current = el)}
+                  ref={fileInputRef}
                   id="profile-avatar-input"
                   type="file"
                   accept="image/*"

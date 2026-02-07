@@ -10,11 +10,12 @@ import { useEffect, useState } from "react";
 import Profileupdate from "@/app/components/Profileupdate";
 export function Profile() {
    const [isOpen, setIsOpen] = useState(false);
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
+    const storedUserStr = localStorage.getItem("user");
+    if (storedUserStr) {
+      const storedUser = JSON.parse(storedUserStr);
       setUser(storedUser);
     }
   }, []);
@@ -40,7 +41,7 @@ export function Profile() {
             <div className="relative">
               <Avatar className="w-32 h-32 border-4 border-white">
                 <AvatarImage src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"} alt={user?.name || 'User'} />
-                <AvatarFallback>{(user?.name || user?.userName || 'User').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</AvatarFallback>
+                <AvatarFallback>{(user?.name || user?.userName || 'User').split(' ').map((s: string)=>s[0]).slice(0,2).join('').toUpperCase()}</AvatarFallback>
               </Avatar>
               <button className="absolute bottom-2 right-2 w-8 h-8 bg-white rounded-full border-2 border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
                 <Camera className="w-4 h-4 text-slate-600" />

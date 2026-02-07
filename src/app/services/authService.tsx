@@ -30,11 +30,6 @@ interface LoginResponse {
   };
 }
 
-interface AuthError {
-  error: string;
-  details?: string;
-}
-
 const API_BASE_URL = 'http://localhost:3000/api';
 
 export const authService = {
